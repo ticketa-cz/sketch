@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+    <html>
+
+    <head>
+        <meta charset="utf-8" />
+        <title>Náčrt rozmístění panelů</title>
+        <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+        <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+        <script src="http://mrrio.github.io/jsPDF/dist/jspdf.debug.js"></script>
+        <script src="https://html2canvas.hertzen.com/dist/html2canvas.js"></script>
+        <script type="text/javascript" src="https://api.mapy.cz/loader.js"></script>
+        <script type="text/javascript">Loader.load(null, {suggest: true});</script>
+        <link rel="stylesheet" href="nacrt.css" media="all">
+        <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css">
+    </head>
+
+    <body id="advanced-geocoding">
+
+        <div id="toolbox">
+            <form id="form">
+                <p>
+                    <label for="query">Adresa:</label><br/>
+                    <input type="text" id="query" />
+                    <input type="submit" value="Hledat" />
+                </p>
+            </form>
+
+            <div id="panely">
+
+                <h5>Položeno:</h5>
+                <h5 id="panel_count">0</h5>
+
+                <h2 id="azimut_switch"></h2>
+                <h5 id="azimut_degree">0°</h5>
+
+                <h5 id="meter">0m</h5>
+
+                <hr id="breakhr"/>
+
+                <label for="strana">Horizontálně</label>
+                <input type="checkbox" id="strana" /><br/><br/>
+
+                <input type="text" id="azimut" value="180°" />
+                <div id="rotator" style="width:200px;"></div>
+
+                <input type="text" id="sklon" />
+                <div id="klopic" style="width:200px;"></div>
+
+            </div>
+
+            <button id="savepdf">Uložit PDF</button>
+        </div>
+
+        <div id="saving">
+            <div id="canvas"></div>
+            <div id="mapa"></div>
+        </div>
+
+        <script type="text/javascript" src="nacrt.js"></script>
+
+    </body>
+</html>
