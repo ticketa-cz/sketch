@@ -1,6 +1,67 @@
+/// url parametry ///
+
+var adresa = getUrlParameter('adresa');
+var psc = getUrlParameter('psc');
+var panel = getUrlParameter('panel1').toLowerCase();
+var pocet = getUrlParameter('panel_c1');
+var pripad = getUrlParameter('issue');
+var jmeno = getUrlParameter('jmeno');
+
+var query = adresa + ' ,' + psc;
+
+if ( panel.includes("aeg") == true && panel.includes("450") == true && panel.includes("black") == true ) {
+    var model = 'AEG';
+}
+if ( panel.includes("sunergy") == true && panel.includes("450") == true && panel.includes("silver") == true ) {
+    var model = 'SUN';
+}
+if ( panel.includes("sunergy") == true && panel.includes("450") == true && panel.includes("black") == true ) {
+    var model = 'SUNB';
+}
+if ( panel.includes("canadian") == true && panel.includes("375") == true) {
+    var model = 'CS375';
+}
+if ( panel.includes("energetika") == true && panel.includes("380") == true) {
+    var model = 'ENG';
+}
+
 //// MAPY.CZ ////
 
-recreateMap(18.1339652, 49.6568169);
+//recreateMap(18.1339652, 49.6568169);
+
+/// vyhledani adresy ///
+
+function odpoved(geocoder) {
+
+    if (!geocoder.getResults()[0].results.length) {
+        alert("Tuhle adresu neznáme. Zkus zadat do vyhledávání.");
+        recreateMap(18.1339652, 49.6568169);
+        return;
+    }
+    
+    var vysledky = geocoder.getResults()[0].results;
+        /* puvodni funkce //
+        var data = [];
+        while (vysledky.length) {
+            var item = vysledky.shift()
+            data.push(item.coords.toWGS84().join(", "));
+        }
+        recreateMap(18.1339652, 49.6568169);
+        alert(data[0]);
+        */
+    //while (vysledky.length < 1) {
+        var item = vysledky.shift();
+        var corr = item.coords.toWGS84();
+        var latt = corr[0];
+        var lonn = corr[1];
+    //}
+    if ( typeof latt !== 'undefined' ) {
+        recreateMap(latt, lonn);
+    } else {
+        alert("Tuhle adresu neznáme... Zkus zadat do vyhledávání.");
+        recreateMap(18.1339652, 49.6568169);
+    }
+}
 
 /// naseptavani ///
 
@@ -44,19 +105,43 @@ var panely = {
     ENG: { sirka: 104 , vyska: 178 },
 };
 
-var panel_count = 22;
-var panel_vyska = 218;
-var panel_sirka = 100;
-var cm_ratio = 0.16;
+// pocet //
 
+if ( typeof pocet !== 'undefined' ) {
+    var panel_count = parseInt(pocet);
+} else {
+    var panel_count = 24;
+}
+
+// rozmery // 
+
+if ( model ) {
+    var panel_vyska = panely[model].vyska;
+    var panel_sirka = panely[model].sirka;
+} else {
+    var panel_vyska = 218;
+    var panel_sirka = 100;
+}
+
+// vypocty //
+
+var cm_ratio = 0.16;
 var panel_width = cm_ratio * panel_sirka;
 var panel_height = cm_ratio * panel_vyska;
 
-// skladani //
+
+//// skladani ////
 
 jQuery(document).ready(function($){
 
     //$(".compass").prependTo( $("#toolbox") );
+
+    // load address //
+
+    $('#query').val( query );
+
+    new SMap.Geocoder(query, odpoved);
+
 
     // append panels //
 
@@ -301,6 +386,12 @@ function refresh_counter() {
 
 function getPDF(){
 
+    if ( typeof jmeno !== 'undefined' ) {
+        var filename = jmeno + '-' + dateFormat(new Date(), 'd_m_Y') + '.pdf';
+    } else {
+        var filename = 'nacrt_panelu-' + dateFormat(new Date(), 'd_m_Y') + '.pdf';
+    }
+
     html2canvas($("#saving")[0], { allowTaint:false, useCORS:true, proxy: "server.js"  } ).then(canvas => {
         var imgData = canvas.toDataURL("image/jpeg",1);
         var pdf = new jsPDF("p", "mm", "a4");
@@ -311,12 +402,19 @@ function getPDF(){
 
         var ratio = imageWidth/imageHeight >= pageWidth/pageHeight ? pageWidth/imageWidth : pageHeight/imageHeight;
         pdf.addImage(imgData, 'JPEG', 0, 0, imageWidth * ratio, imageHeight * ratio);
-        pdf.save("invoice.pdf");
+        pdf.save(filename);
+        //pdf.output('save', filename);
+        //pdf.output('dataurlnewwindow');
+        //await pdf.save(filename, { returnPromise: true });
+        //window.open(URL.createObjectURL(pdf.output("blob")))
+        //window.open(pdf.output('bloburl', { filename: filename }), '_blank');
     });
     
 };
 
+/*
 function CreatePDFfromHTML() {
+
     var HTML_Width = $("#saving").width();
     var HTML_Height = $("#saving").height();
     var top_left_margin = 0;
@@ -338,7 +436,27 @@ function CreatePDFfromHTML() {
         pdf.save("Your_PDF_Name.pdf");
     });
 }
+*/
 
 $('#savepdf').click(function () {
     getPDF();
 });
+
+
+
+//// get url parameter function ////
+
+function getUrlParameter(sParam) {
+    var sPageURL = decodeURIComponent(window.location.search.substring(1)),
+        sURLVariables = sPageURL.split('&'),
+        sParameterName,
+        i;
+
+    for (i = 0; i < sURLVariables.length; i++) {
+        sParameterName = sURLVariables[i].split('=');
+
+        if (sParameterName[0] === sParam) {
+            return sParameterName[1] === undefined ? true : sParameterName[1];
+        }
+    }
+}
